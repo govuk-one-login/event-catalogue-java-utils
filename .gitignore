@@ -32,3 +32,6 @@ build
 
 # Ignore Kotlin plugin data
 .kotlin
+
+# IDE compiled output (Eclipse/VSCode)
+bin/
