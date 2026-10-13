@@ -35,3 +35,6 @@ build
 
 # IDE compiled output (Eclipse/VSCode)
 bin/
+
+# VSCode workspace settings
+.vscode/
