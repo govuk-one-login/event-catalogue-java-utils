@@ -26,7 +26,7 @@ public final class SchemaLoader {
         }
     }
 
-    
+
     public static String getSchemaAsString(String eventName) {
         if (eventName == null || eventName.isBlank()) {
             return null;

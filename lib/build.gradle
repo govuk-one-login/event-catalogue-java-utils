@@ -7,6 +7,12 @@
 plugins {
     // Apply the java-library plugin for API and implementation separation.
     id 'java-library'
+
+    // Produce code coverage reports consumed by SonarCloud.
+    id 'jacoco'
+
+    // Enforce code style / linting with Checkstyle.
+    id 'checkstyle'
 }
 
 repositories {
@@ -64,5 +70,30 @@ java {
 tasks.named('test') {
     // Use JUnit Platform for unit tests.
     useJUnitPlatform()
+
+    // Always generate the coverage report after tests run.
+    finalizedBy tasks.named('jacocoTestReport')
+}
+
+tasks.named('jacocoTestReport') {
+    dependsOn tasks.named('test')
+    reports {
+        // SonarCloud consumes the XML report; disable the HTML/CSV reports in CI.
+        xml.required = true
+        html.required = false
+        csv.required = false
+    }
+}
+
+checkstyle {
+    // Pin the Checkstyle engine version for reproducible builds.
+    toolVersion = '10.18.1'
+
+    // Shared rule set used by both the main and test source sets.
+    configFile = rootProject.file('config/checkstyle/checkstyle.xml')
+
+    // Fail the build on any violation. Raise temporarily if adopting on a
+    // large existing codebase, then ratchet back down to 0.
+    maxWarnings = 0
 }
 

@@ -26,7 +26,7 @@ public final class ValidateEvent {
     private ValidateEvent() {
     }
 
-    
+
     public static boolean validateEvent(String eventJson) {
         if (eventJson == null || eventJson.isBlank()) {
             LOGGER.error("Event validation failed: event payload was null or empty");
@@ -41,7 +41,7 @@ public final class ValidateEvent {
         }
     }
 
-    
+
     public static boolean validateEvent(JsonNode event) {
         try {
             if (event == null || !event.hasNonNull("event_name")) {
