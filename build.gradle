@@ -1,0 +1,26 @@
+/*
+ * Root build script.
+ *
+ * Hosts the SonarQube/SonarCloud configuration for the whole build. The actual
+ * Java code and JaCoCo coverage live in the ':lib' subproject.
+ */
+
+plugins {
+    // SonarCloud / SonarQube analysis. Applied at the root so it can aggregate
+    // every subproject in a single analysis.
+    // 7.x is required for Gradle 9 (earlier versions call the removed
+    // getConvention() API and fail at task execution).
+    id 'org.sonarqube' version '7.5.0.8588'
+}
+
+sonar {
+    properties {
+        property 'sonar.organization', 'govuk-one-login'
+        property 'sonar.projectKey', 'govuk-one-login_event-catalogue-java-utils'
+        property 'sonar.host.url', 'https://sonarcloud.io'
+
+        // Coverage report produced by the ':lib' JaCoCo task.
+        property 'sonar.coverage.jacoco.xmlReportPaths',
+                "${project(':lib').layout.buildDirectory.get()}/reports/jacoco/test/jacocoTestReport.xml"
+    }
+}
