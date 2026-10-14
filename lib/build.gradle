@@ -10,6 +10,8 @@ plugins {
     id 'java-library'
     id 'checkstyle'
     id 'pmd'
+    // Produce coverage reports for SonarCloud.
+    id 'jacoco'
 }
 
 repositories {
@@ -40,6 +42,17 @@ java {
 tasks.named('test') {
     // Use JUnit Platform for unit tests.
     useJUnitPlatform()
+    // Generate the coverage report after tests run so Sonar can consume it.
+    finalizedBy tasks.named('jacocoTestReport')
+}
+
+jacocoTestReport {
+    dependsOn tasks.named('test')
+    reports {
+        // SonarCloud reads coverage from the JaCoCo XML report.
+        xml.required = true
+        html.required = true
+    }
 }
 
 checkstyle {
