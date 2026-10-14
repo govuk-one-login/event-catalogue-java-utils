@@ -12,6 +12,8 @@ plugins {
     id 'pmd'
     // Produce coverage reports for SonarCloud.
     id 'jacoco'
+    // Auto-format Java sources (kept aligned with the Google Checkstyle config).
+    id 'com.diffplug.spotless' version '8.10.2'
 }
 
 repositories {
@@ -72,4 +74,15 @@ pmd {
     toolVersion = "7.16.0"
     rulesMinimumPriority = 5
     ruleSets = ["category/java/errorprone.xml", "category/java/bestpractices.xml"]
+}
+
+spotless {
+    java {
+        target 'src/*/java/**/*.java'
+        // Google Java Format keeps formatting consistent with the Google Checkstyle config.
+        googleJavaFormat()
+        removeUnusedImports()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
 }
