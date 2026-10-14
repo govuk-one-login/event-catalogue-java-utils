@@ -46,7 +46,7 @@ dependencies {
     // schema version and avoids this library re-releasing on every catalogue bump.
     //
     
-    testImplementation 'uk.gov.di.model:event-catalogue-schema:1.0.0'
+    testImplementation 'uk.gov.di.model:event-catalogue-schema:50.4.0'
 
     // JSON Schema draft 2019-09 validator + Jackson.
     implementation 'com.networknt:json-schema-validator:1.5.2'
