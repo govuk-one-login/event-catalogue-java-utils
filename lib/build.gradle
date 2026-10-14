@@ -13,6 +13,9 @@ plugins {
 
     // Enforce code style / linting with Checkstyle.
     id 'checkstyle'
+
+    // Additional static analysis (linting) with PMD.
+    id 'pmd'
 }
 
 repositories {
@@ -97,3 +100,10 @@ checkstyle {
     maxWarnings = 0
 }
 
+// PMD static analysis (linting) configuration.
+pmd {
+    consoleOutput = true                 // print violations to the build output
+    toolVersion = "7.16.0"               // pinned PMD version for reproducible builds
+    rulesMinimumPriority = 5             // report all rule priorities (1–5)
+    ruleSets = ["category/java/errorprone.xml", "category/java/bestpractices.xml"]
+}
