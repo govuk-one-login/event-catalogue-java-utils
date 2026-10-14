@@ -62,6 +62,31 @@ jobs:
       # Gate 4: `sonar` uploads analysis and, with sonar.qualitygate.wait=true,
       # blocks until the SonarCloud quality gate result is known so the job
       # fails if the gate is red.
+      # TEMP DIAGNOSTIC: determine why event-catalogue-schema fails to resolve.
+      # Probes the GitHub Packages Maven registry directly and reports the HTTP
+      # status, distinguishing "no/empty token" from "token present but no access"
+      # (403/404) from "works" (200). Remove once resolution is confirmed working.
+      - name: Diagnose GitHub Packages access
+        env:
+          GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
+          FALLBACK_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ -n "$GPR_TOKEN" ]; then
+            echo "GPR_TOKEN is set (length ${#GPR_TOKEN}); using it."
+            TOKEN="$GPR_TOKEN"
+          else
+            echo "GPR_TOKEN is NOT set; falling back to GITHUB_TOKEN."
+            TOKEN="$FALLBACK_TOKEN"
+          fi
+          URL="https://maven.pkg.github.com/govuk-one-login/event-catalogue/uk/gov/di/model/event-catalogue-schema/1.0.0/event-catalogue-schema-1.0.0.pom"
+          echo "Probing: $URL"
+          CODE=$(curl -sS -o /tmp/probe.out -w "%{http_code}" -u "x:$TOKEN" "$URL" || echo "curl-failed")
+          echo "HTTP status: $CODE"
+          echo "---- response body (first 20 lines) ----"
+          head -20 /tmp/probe.out || true
+          echo "-----------------------------------------"
+          echo "Interpretation: 200=OK, 401=bad/empty token, 403/404=token lacks access to this package."
+
       - name: Build, test, lint and analyze
         env:
           # Resolve the event-catalogue-schema artifact from GitHub Packages.
