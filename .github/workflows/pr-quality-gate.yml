@@ -28,6 +28,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write # allow SonarCloud PR decoration
+      packages: read       # read the event-catalogue-schema artifact from GitHub Packages
     steps:
       - uses: actions/checkout@v4
         with:
@@ -63,9 +64,13 @@ jobs:
       # fails if the gate is red.
       - name: Build, test, lint and analyze
         env:
-          # Needed to resolve the event-catalogue-schema artifact from GitHub Packages.
+          # Resolve the event-catalogue-schema artifact from GitHub Packages.
+          # The schema package lives in the separate govuk-one-login/event-catalogue
+          # repo, which the automatic GITHUB_TOKEN usually cannot read across repos.
+          # Provide a PAT/org token with 'read:packages' as the GPR_TOKEN secret;
+          # falls back to GITHUB_TOKEN when the package is accessible to this repo.
           GITHUB_ACTOR: ${{ github.actor }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GPR_TOKEN || secrets.GITHUB_TOKEN }}
           # Provided via repository/organization secrets for SonarCloud auth.
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: >-
