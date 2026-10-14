@@ -71,4 +71,5 @@ jobs:
         run: >-
           ./gradlew build sonar
           -Dsonar.qualitygate.wait=true
+          --no-configuration-cache
           --info
