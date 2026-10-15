@@ -8,6 +8,12 @@
 plugins {
     // Apply the java-library plugin for API and implementation separation.
     id 'java-library'
+    id 'checkstyle'
+    id 'pmd'
+    // Produce coverage reports for SonarCloud.
+    id 'jacoco'
+    // Auto-format Java sources (kept aligned with the Google Checkstyle config).
+    id 'com.diffplug.spotless' version '8.10.2'
 }
 
 repositories {
@@ -38,4 +44,45 @@ java {
 tasks.named('test') {
     // Use JUnit Platform for unit tests.
     useJUnitPlatform()
+    // Generate the coverage report after tests run so Sonar can consume it.
+    finalizedBy tasks.named('jacocoTestReport')
+}
+
+jacocoTestReport {
+    dependsOn tasks.named('test')
+    reports {
+        // SonarCloud reads coverage from the JaCoCo XML report.
+        xml.required = true
+        html.required = true
+    }
+}
+
+checkstyle {
+    toolVersion = "10.24.0"
+    // Google's config lives at the repo root under config/checkstyle.
+    configDirectory = rootProject.file("config/checkstyle")
+    configFile = rootProject.file("config/checkstyle/checkstyle.xml")
+    // Point Google's SuppressionFilter at our suppressions file.
+    configProperties = [
+        'org.checkstyle.google.suppressionfilter.config'     : rootProject.file("config/checkstyle/suppressions.xml"),
+        'org.checkstyle.google.suppressionxpathfilter.config': rootProject.file("config/checkstyle/suppressions.xml")
+    ]
+}
+
+pmd {
+    consoleOutput = true
+    toolVersion = "7.16.0"
+    rulesMinimumPriority = 5
+    ruleSets = ["category/java/errorprone.xml", "category/java/bestpractices.xml"]
+}
+
+spotless {
+    java {
+        target 'src/*/java/**/*.java'
+        // Google Java Format keeps formatting consistent with the Google Checkstyle config.
+        googleJavaFormat()
+        removeUnusedImports()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
 }
