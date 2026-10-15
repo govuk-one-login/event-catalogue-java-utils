@@ -1,11 +1,33 @@
 // Root build configuration.
 //
 // The SonarQube/SonarCloud plugin must be applied to the root project; it then
-// analyses all subprojects (currently just :lib). Coverage is produced by the
-// JaCoCo plugin in each subproject and picked up automatically by Sonar.
+// analyses all subprojects (currently just :lib). Coverage is aggregated by the
+// jacoco-report-aggregation plugin into a single `unitTestCodeCoverageReport`
+// (matching ipv-cri-lime-shared) and picked up by Sonar.
 
 plugins {
     id 'org.sonarqube' version '7.2.2.6593'
+    // Aggregate the subprojects' JaCoCo coverage into one report for Sonar.
+    id 'jacoco-report-aggregation'
+}
+
+repositories {
+    // Needed so the aggregation task can resolve the subprojects' runtime
+    // classpath (e.g. guava) when building the combined coverage report.
+    mavenCentral()
+}
+
+dependencies {
+    // Pull coverage data from every subproject into the aggregated report.
+    subprojects.forEach { sub ->
+        jacocoAggregation sub
+    }
+}
+
+reporting {
+    reports.create('unitTestCodeCoverageReport', JacocoCoverageReport) {
+        testSuiteName = 'test'
+    }
 }
 
 sonar {
@@ -13,5 +35,7 @@ sonar {
         property 'sonar.projectKey', 'govuk-one-login_event-catalogue-java-utils'
         property 'sonar.organization', 'govuk-one-login'
         property 'sonar.host.url', 'https://sonarcloud.io'
+        property 'sonar.java.coveragePlugin', 'jacoco'
+        property 'sonar.coverage.jacoco.xmlReportPaths', layout.buildDirectory.file('reports/jacoco/unitTestCodeCoverageReport/unitTestCodeCoverageReport.xml')
     }
 }
