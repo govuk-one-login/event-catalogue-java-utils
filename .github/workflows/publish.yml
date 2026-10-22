@@ -1,0 +1,52 @@
+name: Publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to publish (e.g. 1.0.0)"
+        required: true
+        type: string
+      dry_run:
+        description: "Dry run? (build + publish to the local Maven repo only, nothing is pushed to GitHub Packages)"
+        required: true
+        default: false
+        type: boolean
+
+run-name: Publish event-catalogue-java-utils ${{ github.event.inputs.version }} ${{ github.event.inputs.dry_run == 'true' && '(dry run)' || '' }}
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          java-version: "21"
+          distribution: "temurin"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@50e97c2cd7a37755bbfafc9c5b7cafaece252f6e # v4
+        with:
+          gradle-version: wrapper
+
+      - name: Build and test
+        run: ./gradlew :lib:build -Pversion="${{ github.event.inputs.version }}"
+
+      - name: Publish to GitHub Packages
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        run: ./gradlew :lib:publish -Pversion="${{ github.event.inputs.version }}"
+        env:
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Dry run publish (local Maven repository only)
+        if: ${{ github.event.inputs.dry_run == 'true' }}
+        run: ./gradlew :lib:publishToMavenLocal -Pversion="${{ github.event.inputs.version }}"
