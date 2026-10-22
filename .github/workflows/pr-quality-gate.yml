@@ -39,19 +39,20 @@ jobs:
 
       - name: Checks and tests
         env:
-          # Resolve the event-catalogue-schema artifact from GitHub Packages using
-          # the automatic GITHUB_TOKEN (same pattern as other govuk-one-login Java
-          # repos). Requires the event-catalogue package to grant read access to
-          # this repo and the job's packages:read permission.
+          # Resolve the private event-catalogue-schema artifact from GitHub Packages.
+          # The default GITHUB_TOKEN is scoped to this repo only and cannot read a
+          # package owned by the event-catalogue repo, so a dedicated PAT secret with
+          # read:packages (GH_PACKAGES_TOKEN) is used, mirroring the pattern in
+          # govuk-one-login-frontend. Falls back to GITHUB_TOKEN if the secret is unset.
           GITHUB_ACTOR: ${{ github.actor }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN || secrets.GITHUB_TOKEN }}
         run: ./gradlew spotlessCheck unitTestCodeCoverageReport
 
       - name: Sonar analysis
         if: github.actor != 'dependabot[bot]'
         env:
           GITHUB_ACTOR: ${{ github.actor }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN || secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: ./gradlew sonar --info
 
