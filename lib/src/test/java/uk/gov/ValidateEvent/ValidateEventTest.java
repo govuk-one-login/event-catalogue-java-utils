@@ -146,4 +146,25 @@ class ValidateEventTest {
                 SchemaLoader.getSchemaAsString("  ") != null,
                 "A blank event name should return null");
     }
+
+    @Test
+    void returnsFalseWhenNodeAccessThrowsUnexpectedly() {
+        // A JsonNode that blows up when inspected exercises the defensive
+        // catch-all in validateEvent(JsonNode): any unexpected error must be
+        // swallowed and treated as "does not match", never propagated.
+        JsonNode explodingNode =
+                new com.fasterxml.jackson.databind.node.ObjectNode(MAPPER.getNodeFactory()) {
+                    @Override
+                    public boolean hasNonNull(String fieldName) {
+                        throw new IllegalStateException("simulated node failure");
+                    }
+                };
+
+        assertDoesNotThrow(
+                () -> ValidateEvent.validateEvent(explodingNode),
+                "An unexpected error while reading the node must not propagate");
+        assertFalse(
+                ValidateEvent.validateEvent(explodingNode),
+                "An unexpected error while reading the node should be treated as not matching");
+    }
 }
