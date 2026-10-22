@@ -4,7 +4,7 @@ plugins {
     // Produce coverage reports for SonarCloud.
     id 'jacoco'
     // Auto-format Java sources.
-    id 'com.diffplug.spotless' version '8.10.2'
+    id 'com.diffplug.spotless' version '8.10.4'
 
     id 'maven-publish'
 }
