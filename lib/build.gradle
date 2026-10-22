@@ -8,6 +8,12 @@
 plugins {
     // Apply the java-library plugin for API and implementation separation.
     id 'java-library'
+    id 'checkstyle'
+    id 'pmd'
+    // Produce coverage reports for SonarCloud.
+    id 'jacoco'
+    // Auto-format Java sources (kept aligned with the Google Checkstyle config).
+    id 'com.diffplug.spotless' version '8.10.2'
 }
 
 repositories {
@@ -38,4 +44,61 @@ java {
 tasks.named('test') {
     // Use JUnit Platform for unit tests.
     useJUnitPlatform()
+    // Generate the coverage report and verify coverage after tests run.
+    finalizedBy tasks.named('jacocoTestReport'), tasks.named('jacocoTestCoverageVerification')
+}
+
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                counter = 'LINE'
+                minimum = 0.93
+            }
+            limit {
+                counter = 'BRANCH'
+                minimum = 0.93
+            }
+        }
+    }
+}
+
+jacocoTestReport {
+    dependsOn tasks.named('test')
+    reports {
+        // SonarCloud reads coverage from the JaCoCo XML report.
+        xml.required = true
+        html.required = true
+    }
+}
+
+checkstyle {
+    toolVersion = "10.24.0"
+    // Google's config lives at the repo root under config/checkstyle.
+    configDirectory = rootProject.file("config/checkstyle")
+    configFile = rootProject.file("config/checkstyle/checkstyle.xml")
+    // Point Google's SuppressionFilter at our suppressions file.
+    configProperties = [
+        'org.checkstyle.google.suppressionfilter.config'     : rootProject.file("config/checkstyle/suppressions.xml"),
+        'org.checkstyle.google.suppressionxpathfilter.config': rootProject.file("config/checkstyle/suppressions.xml")
+    ]
+}
+
+pmd {
+    consoleOutput = true
+    toolVersion = "7.16.0"
+    rulesMinimumPriority = 5
+    ruleSets = ["category/java/errorprone.xml", "category/java/bestpractices.xml"]
+}
+
+spotless {
+    java {
+        target 'src/*/java/**/*.java'
+        googleJavaFormat().aosp().formatJavadoc(true)
+        importOrder '', 'javax', 'java', '\\#'
+        removeUnusedImports()
+        forbidWildcardImports()
+        formatAnnotations()
+        endWithNewline()
+    }
 }

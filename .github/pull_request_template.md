@@ -15,14 +15,14 @@
 
 - [ ] **Code Changes**
   - [ ] Tests added/updated
-  
+
 - [ ] **Dependencies**
   - [ ] Dependency versions updated, if necessary
-  
+
 - [ ] **Testing**
   - [ ] Local testing done
   - [ ] Tests run for affected packages
-  
+
 - [ ] **Documentation**
   - [ ] Confluence Documentation updated, if applicable
   - [ ] README updated, if applicable

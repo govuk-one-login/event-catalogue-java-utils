@@ -1,0 +1,64 @@
+name: PR check
+
+on:
+  pull_request:
+    branches: [ 'main' ]
+
+jobs:
+
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pre-commit checks
+        uses: govuk-one-login/github-actions/code-quality/run-pre-commit@3b0015c58dd0e19e1572fda59dda4184df387d1e
+        with:
+          all-files: true
+
+  validate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read # read the event-catalogue-schema artifact from GitHub Packages
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: JDK setup
+        uses: actions/setup-java@v5
+        with:
+          java-version-file: '.sdkmanrc'
+          distribution: 'corretto'
+
+      - name: Gradle setup
+        uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c # v5.0.2
+        with:
+          cache-read-only: false
+
+      - name: Checks and tests
+        env:
+          # Resolve the event-catalogue-schema artifact from GitHub Packages using
+          # the automatic GITHUB_TOKEN (same pattern as other govuk-one-login Java
+          # repos). Requires the event-catalogue package to grant read access to
+          # this repo and the job's packages:read permission.
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./gradlew spotlessCheck unitTestCodeCoverageReport
+
+      - name: Sonar analysis
+        if: github.actor != 'dependabot[bot]'
+        env:
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: ./gradlew sonar --info
+
+      - name: Upload test report
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-report
+          path: build/reports/jacoco/
+          retention-days: 3
