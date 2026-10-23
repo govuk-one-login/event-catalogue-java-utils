@@ -44,14 +44,14 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.2'
 
     // Logging facade used to log validation outcomes.
-    implementation 'org.slf4j:slf4j-api:2.0.13'
+    implementation 'org.slf4j:slf4j-api:2.0.20'
 
     // Use JUnit Jupiter for testing.
     testImplementation libs.junit.jupiter
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     // Provide a logging binding so slf4j output is visible during tests.
-    testRuntimeOnly 'org.slf4j:slf4j-simple:2.0.13'
+    testRuntimeOnly 'org.slf4j:slf4j-simple:2.0.20'
 }
 
 java {
