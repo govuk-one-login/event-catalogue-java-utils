@@ -85,6 +85,24 @@ boolean ok = ValidateEvent.validateEvent(eventNode);
 otherwise (including for null/blank input, malformed JSON, a missing `event_name`,
 or an unknown event name); it does not throw on bad input.
 
+## Publishing a new version
+
+Releases are driven by GitHub Releases: the release tag **is** the published
+version. Creating a release triggers the `Publish` workflow, which builds the
+library and publishes it to GitHub Packages.
+
+To cut a release:
+
+1. Go to **Releases → Draft a new release**.
+2. Create a tag of the form `vX.Y.Z` (e.g. `v1.2.0`), following
+   [semantic versioning](https://semver.org/).
+3. Publish the release.
+
+The workflow strips the leading `v` and publishes that version (`v1.2.0` →
+`1.2.0`). Normal pushes to `main` do not publish; a release is a deliberate
+action. If a publish needs repeating, re-run the workflow manually
+(**Actions → Publish → Run workflow**) and supply the existing tag.
+
 ## Formatting
 
 This project uses [Spotless](https://github.com/diffplug/spotless) for code formatting. To automatically fix formatting violations, run:
